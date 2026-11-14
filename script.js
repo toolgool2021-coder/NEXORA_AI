@@ -130,7 +130,7 @@
       const output=document.createElement("span");output.className="typewriter-text";bubble.append(output);
       const caret=document.createElement("span");caret.className="typing-caret";caret.setAttribute("aria-hidden","true");bubble.append(caret);
       const skip=document.createElement("button");skip.type="button";skip.className="skip-typing";skip.textContent="Показать полностью ↗";body.append(skip);
-      const chars=Array.from(answer);let pos=0;
+      const chars=Array.from(answer.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,"$1"));let pos=0;
       const step=Math.max(6,Math.min(22,Math.round(1600/Math.max(1,chars.length))));
       let finished=false;
       function finish(){
@@ -157,7 +157,7 @@
     (data?.options||[]).filter(x=>!x.toLowerCase().startsWith("назад |")&&!x.toLowerCase().startsWith("на главную |")).slice(0,4).forEach(option=>{
       const [label,target]=option.split(" | ");
       if(!label||!dict[target])return;
-      const button=document.createElement("button");button.type="button";button.textContent=label;button.addEventListener("click",()=>ask(label,target));suggestions.append(button);
+      const button=document.createElement("button");button.type="button";button.textContent=label;button.className="reply-choice";button.addEventListener("click",()=>ask(label,target));suggestions.append(button);
     });
   }
   function ask(question,forceKey=""){
