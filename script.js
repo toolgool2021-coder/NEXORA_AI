@@ -111,7 +111,7 @@
   }
   let answerTimer=null;
   function animateAnswer(answer,key){
-    if(answerTimer){clearTimeout(answerTimer);answerTimer=null;}
+    if(answerTimer){clearTimeout(answerTimer);answerTimer=null;conversation.querySelectorAll(".typing-message").forEach(el=>el.remove());}
     const typing=document.createElement("article");typing.className="message ai typing-message";
     const avatar=document.createElement("div");avatar.className="avatar";avatar.textContent="N";
     const body=document.createElement("div");body.className="message-body";
@@ -147,7 +147,7 @@
     function resetChat(){
     if(!history.length)return;
     if(!confirm("Очистить историю этого чата?"))return;
-    if(answerTimer){clearTimeout(answerTimer);answerTimer=null;}history=[];currentKey="main";save();conversation.replaceChildren();const intro=document.createElement("section");intro.className="welcome";intro.id="welcome-new";intro.innerHTML='<div class="hero-mark" aria-hidden="true"><span>N</span><i></i><i></i></div><div class="eyebrow">НОВЫЙ ДИАЛОГ</div><h1>О чём поговорим?</h1><p>Задайте вопрос или выберите тему из подсказок ниже.</p>';
+    if(answerTimer){clearTimeout(answerTimer);answerTimer=null;}history=[];currentKey="main";save();conversation.replaceChildren();const intro=document.createElement("section");intro.className="welcome";intro.id="welcome-new";intro.innerHTML='<div class="hero-mark" aria-hidden="true"><span>N</span><i></i><i></i></div><div class="eyebrow">НОВЫЙ ДИАЛОГ</div><h1>О чём поговорим?</h1><p>Выберите тему из предложенных вопросов ниже.</p>';
     conversation.append(intro);renderSuggestions("main");closeSidebar();
   }
   const sidebar=$("sidebar"),overlay=$("mobile-overlay");
