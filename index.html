@@ -1,56 +1,66 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orbit AI</title>
-    <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080b13">
+<meta name="description" content="NEXORA AI — интеллектуальный справочный помощник экосистемы NEXORA.">
+<meta property="og:title" content="NEXORA AI · Ассистент">
+<meta property="og:description" content="Быстрые ответы, поддержка и удобный поиск по базе знаний NEXORA AI.">
+<title>NEXORA AI · Ассистент</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css?v=2">
 </head>
 <body>
-    <div id="app">
-        <!-- Particles background -->
-        <div id="particles-container" class="particles-container"></div>
-
-        <!-- Главный экран -->
-        <div id="welcome-screen" class="welcome-screen">
-            <div class="orbit-container">
-                <div class="brain-wrapper">
-                    <img src="assets/brain.png" alt="Orbit AI Brain" class="brain-image">
-                </div>
-                <h1 class="orbit-title">Orbit AI</h1>
-            </div>
-            <button id="action-panel" class="action-panel" aria-label="Start chat">
-                <span class="action-text">Начните разговор</span>
-                <span class="action-icon">→</span>
-            </button>
+<div class="ambient" aria-hidden="true"></div>
+<div class="shell">
+<aside class="sidebar" id="sidebar">
+  <div class="brand"><span class="brand-icon">N<span class="brand-dot"></span></span><div><strong>NEXORA <span>AI</span></strong><small>ASSISTANT / 2.0</small></div></div>
+  <button class="new-chat" id="new-chat" type="button"><span>＋</span> Новый диалог</button>
+  <p class="side-label">НАВИГАЦИЯ</p>
+  <button class="side-item" id="topics-button" type="button">◇ <span>Быстрые вопросы</span></button>
+  <button class="side-item" id="about-button" type="button">ⓘ <span>О помощнике</span></button>
+  <div class="sidebar-bottom"><span class="status-dot"></span> Локальная база ответов <small>Без подключения нейросети</small><a href="https://tlnexora.duckdns.org/" target="_blank" rel="noopener noreferrer">Перейти в NEXORA ↗</a><span class="credit">Created by @Toolgool</span></div>
+</aside>
+<main class="main">
+  <header class="topbar">
+    <button class="menu-button" id="menu-button" aria-label="Открыть меню" aria-expanded="false" type="button">☰</button>
+    <div class="top-title"><span class="header-logo">✦</span><div><strong>NEXORA AI</strong><small>Справочный ассистент</small></div></div>
+    <div class="top-actions"><button class="icon-button" id="clear-button" title="Очистить чат" aria-label="Очистить чат" type="button">↻</button><button class="icon-button" id="help-button" title="Быстрые вопросы" aria-label="Быстрые вопросы" type="button">☷</button></div>
+  </header>
+  <div class="chat-scroll" id="chat-scroll">
+    <div class="conversation" id="conversation" aria-live="polite" aria-relevant="additions text">
+      <section class="welcome" id="welcome">
+        <div class="hero-mark" aria-hidden="true"><span>N</span><i></i><i></i></div>
+        <div class="eyebrow">NEXORA INTELLIGENCE</div>
+        <h1>Привет! Я <span>NEXORA AI.</span></h1>
+        <p>Справочный помощник проекта NEXORA. Могу ответить на типовые вопросы, рассказать о возможностях платформы и помочь с распространёнными техническими проблемами.</p>
+        <div class="starter-grid" id="starter-grid">
+          <button type="button" data-question="Кто ты?"><span>✦</span><strong>Кто ты?</strong><small>О проекте и ассистенте</small></button>
+          <button type="button" data-question="Что ты умеешь?"><span>◇</span><strong>Возможности</strong><small>Что доступно в чате</small></button>
+          <button type="button" data-question="У меня ошибка на сайте"><span>⚙</span><strong>Решить проблему</strong><small>Техническая помощь</small></button>
+          <button type="button" data-question="Кто создатель?"><span>↗</span><strong>Создатель</strong><small>Разработчик NEXORA AI</small></button>
         </div>
-
-        <!-- Экран чата -->
-        <div id="chat-screen" class="chat-screen hidden">
-            <div class="chat-header">
-                <h2 class="chat-title">Orbit AI</h2>
-                <button id="back-button" class="back-button" aria-label="Back to menu">
-                    <span class="back-icon">✕</span>
-                    <span class="back-text">Выход</span>
-                </button>
-            </div>
-            <div class="chat-container">
-                <div id="messages-container" class="messages-container"></div>
-            </div>
-        </div>
-
-        <!-- Модальное окно с вопросами -->
-        <div id="modal-overlay" class="modal-overlay hidden"></div>
-        <div id="modal-panel" class="modal-panel hidden">
-            <div class="modal-header">
-                <h2>Быстрые вопросы</h2>
-                <button id="close-modal" class="close-modal" aria-label="Close">✕</button>
-            </div>
-            <div id="questions-container" class="questions-container"></div>
-        </div>
+      </section>
     </div>
-
-    <script src="responses.js"></script>
-    <script src="script.js"></script>
+  </div>
+  <div class="composer-zone">
+    <div id="suggestions" class="suggestions" aria-label="Подсказки"></div>
+    <form id="chat-form" class="composer">
+      <textarea id="prompt" rows="1" maxlength="2000" placeholder="Напишите сообщение..." aria-label="Ваше сообщение"></textarea>
+      <button id="send-button" class="send-button" type="submit" aria-label="Отправить сообщение" disabled>↑</button>
+    </form>
+    <p class="composer-note">NEXORA AI использует локальную базу знаний, а не генеративную модель. Ответы могут быть ограничены.</p>
+  </div>
+</main>
+</div>
+<div class="mobile-overlay" id="mobile-overlay" hidden></div>
+<dialog id="topics-dialog" class="topics-dialog" aria-labelledby="topics-title">
+  <div class="dialog-head"><div><small>БАЗА ЗНАНИЙ</small><h2 id="topics-title">Быстрые вопросы</h2></div><button id="close-topics" aria-label="Закрыть" type="button">×</button></div>
+  <input id="topics-search" type="search" placeholder="Поиск вопроса..." aria-label="Поиск по вопросам">
+  <div class="topics-list" id="topics-list"></div>
+</dialog>
+<script src="responses.js?v=2"></script>
+<script src="script.js?v=2"></script>
 </body>
 </html>
