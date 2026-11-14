@@ -109,20 +109,47 @@
     while((match=link.exec(text))){node.append(document.createTextNode(text.slice(last,match.index)));const a=document.createElement("a");a.className="message-link";a.textContent=match[1];a.href=match[2];a.target="_blank";a.rel="noopener noreferrer";node.append(a);last=link.lastIndex;}
     node.append(document.createTextNode(text.slice(last)));
   }
-  let answerTimer=null;
+  let answerTimer=null, typeTimer=null, activeTyping=null;
+  function cancelTyping(){
+    if(answerTimer!==null)clearTimeout(answerTimer);
+    if(typeTimer!==null)clearTimeout(typeTimer);
+    answerTimer=null;typeTimer=null;
+    if(activeTyping){activeTyping.remove();activeTyping=null;}
+  }
   function animateAnswer(answer,key){
-    if(answerTimer){clearTimeout(answerTimer);answerTimer=null;conversation.querySelectorAll(".typing-message").forEach(el=>el.remove());}
-    const typing=document.createElement("article");typing.className="message ai typing-message";
+    cancelTyping();
+    const typing=document.createElement("article");typing.className="message ai typing-message";activeTyping=typing;
     const avatar=document.createElement("div");avatar.className="avatar";avatar.textContent="N";
     const body=document.createElement("div");body.className="message-body";
+    const meta=document.createElement("div");meta.className="message-meta";meta.textContent="NEXORA AI · печатает";
     const bubble=document.createElement("div");bubble.className="message-bubble";
     const indicator=document.createElement("div");indicator.className="typing";indicator.innerHTML="<i></i><i></i><i></i>";
-    bubble.append(indicator);body.append(bubble);typing.append(avatar,body);conversation.append(typing);scrollBottom();
-    const delay=Math.min(1150,420+answer.length*.9);
+    bubble.append(indicator);body.append(meta,bubble);typing.append(avatar,body);conversation.append(typing);scrollBottom();
     answerTimer=setTimeout(()=>{
-      typing.remove();answerTimer=null;addMessage("ai",answer,key);
-      renderSuggestions(key);
-    },delay);
+      answerTimer=null;indicator.remove();meta.textContent="NEXORA AI";typing.classList.remove("typing-message");typing.classList.add("writing-message");
+      const output=document.createElement("span");output.className="typewriter-text";bubble.append(output);
+      const caret=document.createElement("span");caret.className="typing-caret";caret.setAttribute("aria-hidden","true");bubble.append(caret);
+      const skip=document.createElement("button");skip.type="button";skip.className="skip-typing";skip.textContent="Показать полностью ↗";body.append(skip);
+      const chars=Array.from(answer);let pos=0;
+      const step=Math.max(6,Math.min(22,Math.round(1600/Math.max(1,chars.length))));
+      let finished=false;
+      function finish(){
+        if(finished)return;finished=true;
+        if(typeTimer!==null){clearTimeout(typeTimer);typeTimer=null;}
+        skip.remove();caret.remove();output.remove();setContent(bubble,answer);
+        typing.classList.remove("writing-message");activeTyping=null;
+        history.push({role:"ai",text:answer,key});save();renderSuggestions(key);scrollBottom();
+      }
+      skip.addEventListener("click",finish,{once:true});
+      function tick(){
+        if(pos>=chars.length){finish();return;}
+        const count=Math.min(chars.length-pos,Math.max(1,Math.ceil(chars.length/190)));
+        output.textContent+=chars.slice(pos,pos+count).join("");pos+=count;
+        if(pos%12===0)scrollBottom();
+        typeTimer=setTimeout(tick,step);
+      }
+      tick();
+    },420);
   }
   function renderSuggestions(key){
     suggestions.replaceChildren();
@@ -135,7 +162,7 @@
   }
   function ask(question,forceKey=""){
     const text=String(question||"").trim().slice(0,2000);if(!text)return;
-    addMessage("user",text);
+    cancelTyping();addMessage("user",text);
     const key=forceKey&&dict[forceKey]?forceKey:identify(text,currentKey);
     const answer=key&&dict[key]?dict[key].text:"Выберите вопрос из доступных вариантов.";
     currentKey=key||"unknown";
@@ -147,7 +174,7 @@
     function resetChat(){
     if(!history.length)return;
     if(!confirm("Очистить историю этого чата?"))return;
-    if(answerTimer){clearTimeout(answerTimer);answerTimer=null;}history=[];currentKey="main";save();conversation.replaceChildren();const intro=document.createElement("section");intro.className="welcome";intro.id="welcome-new";intro.innerHTML='<div class="hero-mark" aria-hidden="true"><span>N</span><i></i><i></i></div><div class="eyebrow">НОВЫЙ ДИАЛОГ</div><h1>О чём поговорим?</h1><p>Выберите тему из предложенных вопросов ниже.</p>';
+    cancelTyping();history=[];currentKey="main";save();conversation.replaceChildren();const intro=document.createElement("section");intro.className="welcome";intro.id="welcome-new";intro.innerHTML='<div class="hero-mark" aria-hidden="true"><span>N</span><i></i><i></i></div><div class="eyebrow">НОВЫЙ ДИАЛОГ</div><h1>О чём поговорим?</h1><p>Выберите тему из предложенных вопросов ниже.</p>';
     conversation.append(intro);renderSuggestions("main");closeSidebar();
   }
   const sidebar=$("sidebar"),overlay=$("mobile-overlay");
