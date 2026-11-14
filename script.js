@@ -246,6 +246,12 @@
     card.style.setProperty("--mx",(e.clientX-rect.left)+"px");
     card.style.setProperty("--my",(e.clientY-rect.top)+"px");
   });
+  const sections={"О NEXORA":"nexora","Важные документы":"documents","Правила сообщества":"rules","Помощь и безопасность":"help"};
+  const starter=$("starter-grid");
+  if(starter)starter.addEventListener("click",e=>{
+    const button=e.target.closest("[data-question]");
+    if(button&&sections[button.dataset.question]){e.stopPropagation();ask(button.dataset.question,sections[button.dataset.question]);}
+  },true);
   load();
   if(history.length){for(const msg of history)addMessage(msg.role,msg.text,msg.key,false);}
   renderSuggestions(currentKey);
