@@ -9,11 +9,11 @@
 <meta property="og:description" content="Быстрые ответы, поддержка и удобный поиск по базе знаний NEXORA AI.">
 <title>NEXORA AI · Ассистент</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="styles.css?v=2">
+<link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
-<div class="ambient" aria-hidden="true"></div>
-<div class="shell">
+<div class="ambient" aria-hidden="true"><div class="ambient-grid"></div><div class="aurora aurora-one"></div><div class="aurora aurora-two"></div><div class="aurora aurora-three"></div><div class="stars" id="stars"></div><div class="noise-layer"></div></div>
+<div class="shell" id="shell">
 <aside class="sidebar" id="sidebar">
   <div class="brand"><span class="brand-icon">N<span class="brand-dot"></span></span><div><strong>NEXORA <span>AI</span></strong><small>ASSISTANT / 2.0</small></div></div>
   <button class="new-chat" id="new-chat" type="button"><span>＋</span> Новый диалог</button>
@@ -26,14 +26,14 @@
   <header class="topbar">
     <button class="menu-button" id="menu-button" aria-label="Открыть меню" aria-expanded="false" type="button">☰</button>
     <div class="top-title"><span class="header-logo">✦</span><div><strong>NEXORA AI</strong><small>Справочный ассистент</small></div></div>
-    <div class="top-actions"><button class="icon-button" id="clear-button" title="Очистить чат" aria-label="Очистить чат" type="button">↻</button><button class="icon-button" id="help-button" title="Быстрые вопросы" aria-label="Быстрые вопросы" type="button">☷</button></div>
+    <div class="top-actions"><button class="icon-button motion-toggle" id="motion-toggle" title="Переключить эффекты" aria-label="Переключить эффекты" aria-pressed="true" type="button">✧</button><button class="icon-button" id="clear-button" title="Очистить чат" aria-label="Очистить чат" type="button">↻</button><button class="icon-button" id="help-button" title="Быстрые вопросы" aria-label="Быстрые вопросы" type="button">☷</button></div>
   </header>
   <div class="chat-scroll" id="chat-scroll">
     <div class="conversation" id="conversation" aria-live="polite" aria-relevant="additions text">
       <section class="welcome" id="welcome">
         <div class="hero-mark" aria-hidden="true"><span>N</span><i></i><i></i></div>
-        <div class="eyebrow">NEXORA INTELLIGENCE</div>
-        <h1>Привет! Я <span>NEXORA AI.</span></h1>
+        <div class="eyebrow"><span class="live-spark"></span> NEXORA INTELLIGENCE <span class="eyebrow-line"></span> VERSION 2.1</div>
+        <h1>Привет! Я <span class="gradient-title">NEXORA AI.</span></h1>
         <p>Справочный помощник проекта NEXORA. Могу ответить на типовые вопросы, рассказать о возможностях платформы и помочь с распространёнными техническими проблемами.</p>
         <div class="starter-grid" id="starter-grid">
           <button type="button" data-question="Кто ты?"><span>✦</span><strong>Кто ты?</strong><small>О проекте и ассистенте</small></button>
@@ -61,6 +61,6 @@
   <div class="topics-list" id="topics-list"></div>
 </dialog>
 <script src="responses.js?v=2"></script>
-<script src="script.js?v=2"></script>
+<script src="script.js?v=3"></script>
 </body>
 </html>
