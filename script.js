@@ -168,6 +168,45 @@
   $("menu-button").addEventListener("click",toggleSidebar);
   overlay.addEventListener("click",closeSidebar);
   $("starter-grid").addEventListener("click",e=>{const button=e.target.closest("[data-question]");if(button)ask(button.dataset.question);});
+  // Lightweight starfield and interactive glass highlights
+  const stars=$("stars");
+  if(stars){
+    const frag=document.createDocumentFragment();
+    for(let i=0;i<44;i++){
+      const star=document.createElement("i");star.className="star";
+      const hash=n=>((i*73+n*131+17)%997)/997;
+      star.style.setProperty("--x",(hash(1)*100).toFixed(2)+"%");
+      star.style.setProperty("--y",(hash(2)*100).toFixed(2)+"%");
+      star.style.setProperty("--size",(1+hash(3)*2).toFixed(2)+"px");
+      star.style.setProperty("--opacity",(0.18+hash(4)*0.52).toFixed(2));
+      star.style.setProperty("--duration",(2+hash(5)*5).toFixed(2)+"s");
+      star.style.setProperty("--delay",(-hash(6)*6).toFixed(2)+"s");
+      frag.append(star);
+    }
+    stars.append(frag);
+  }
+  const motionToggle=$("motion-toggle");
+  const motionPreference=window.matchMedia("(prefers-reduced-motion: reduce)");
+  let motionEnabled=!motionPreference.matches;
+  try{const stored=localStorage.getItem("nexora-motion");if(stored!==null)motionEnabled=stored==="on";}catch{}
+  function setMotion(enabled){
+    motionEnabled=enabled;
+    document.body.classList.toggle("motion-off",!enabled);
+    motionToggle.setAttribute("aria-pressed",String(enabled));
+    motionToggle.title=enabled?"Отключить эффекты":"Включить эффекты";
+    motionToggle.textContent=enabled?"✧":"◌";
+  }
+  setMotion(motionEnabled);
+  motionToggle.addEventListener("click",()=>{setMotion(!motionEnabled);try{localStorage.setItem("nexora-motion",motionEnabled?"on":"off");}catch{}});
+  const grid=$("starter-grid");
+  if(grid)grid.addEventListener("pointermove",e=>{
+    if(!motionEnabled||e.pointerType==="touch")return;
+    const card=e.target.closest("button");
+    if(!card)return;
+    const rect=card.getBoundingClientRect();
+    card.style.setProperty("--mx",(e.clientX-rect.left)+"px");
+    card.style.setProperty("--my",(e.clientY-rect.top)+"px");
+  });
   load();
   if(history.length){for(const msg of history)addMessage(msg.role,msg.text,msg.key,false);}
   renderSuggestions(currentKey);
