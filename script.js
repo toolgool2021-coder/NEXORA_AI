@@ -77,7 +77,7 @@
   }
   let history=[];
   let currentKey="main";
-  const conversation=$("conversation"),scroll=$("chat-scroll"),welcome=$("welcome"),prompt=$("prompt"),send=$("send-button"),suggestions=$("suggestions"),topics=$("topics-dialog");
+  const conversation=$("conversation"),scroll=$("chat-scroll"),welcome=$("welcome"),suggestions=$("suggestions"),topics=$("topics-dialog");
   function load(){
     try{
       const saved=JSON.parse(localStorage.getItem(storageKey)||"[]");
@@ -109,6 +109,21 @@
     while((match=link.exec(text))){node.append(document.createTextNode(text.slice(last,match.index)));const a=document.createElement("a");a.className="message-link";a.textContent=match[1];a.href=match[2];a.target="_blank";a.rel="noopener noreferrer";node.append(a);last=link.lastIndex;}
     node.append(document.createTextNode(text.slice(last)));
   }
+  let answerTimer=null;
+  function animateAnswer(answer,key){
+    if(answerTimer){clearTimeout(answerTimer);answerTimer=null;}
+    const typing=document.createElement("article");typing.className="message ai typing-message";
+    const avatar=document.createElement("div");avatar.className="avatar";avatar.textContent="N";
+    const body=document.createElement("div");body.className="message-body";
+    const bubble=document.createElement("div");bubble.className="message-bubble";
+    const indicator=document.createElement("div");indicator.className="typing";indicator.innerHTML="<i></i><i></i><i></i>";
+    bubble.append(indicator);body.append(bubble);typing.append(avatar,body);conversation.append(typing);scrollBottom();
+    const delay=Math.min(1150,420+answer.length*.9);
+    answerTimer=setTimeout(()=>{
+      typing.remove();answerTimer=null;addMessage("ai",answer,key);
+      renderSuggestions(key);
+    },delay);
+  }
   function renderSuggestions(key){
     suggestions.replaceChildren();
     const data=dict[key]||dict.main;
@@ -122,19 +137,18 @@
     const text=String(question||"").trim().slice(0,2000);if(!text)return;
     addMessage("user",text);
     const key=forceKey&&dict[forceKey]?forceKey:identify(text,currentKey);
-    const answer=key&&dict[key]?dict[key].text:"Не смог уверенно определить тему вопроса. В этой версии я работаю по заранее подготовленной базе, поэтому не буду придумывать ответ. Попробуйте написать иначе или откройте быстрые вопросы.";
+    const answer=key&&dict[key]?dict[key].text:"Выберите вопрос из доступных вариантов.";
     currentKey=key||"unknown";
-    addMessage("ai",answer,currentKey);
-    renderSuggestions(currentKey);
-    prompt.value="";resizeInput();prompt.focus();
+    suggestions.replaceChildren();
+    animateAnswer(answer,currentKey);
+
     closeSidebar();
   }
-  function resizeInput(){prompt.style.height="auto";prompt.style.height=Math.min(prompt.scrollHeight,155)+"px";send.disabled=!prompt.value.trim();}
-  function resetChat(){
+    function resetChat(){
     if(!history.length)return;
     if(!confirm("Очистить историю этого чата?"))return;
-    history=[];currentKey="main";save();conversation.replaceChildren();const intro=document.createElement("section");intro.className="welcome";intro.id="welcome-new";intro.innerHTML='<div class="hero-mark" aria-hidden="true"><span>N</span><i></i><i></i></div><div class="eyebrow">НОВЫЙ ДИАЛОГ</div><h1>О чём поговорим?</h1><p>Задайте вопрос или выберите тему из подсказок ниже.</p>';
-    conversation.append(intro);renderSuggestions("main");prompt.focus();closeSidebar();
+    if(answerTimer){clearTimeout(answerTimer);answerTimer=null;}history=[];currentKey="main";save();conversation.replaceChildren();const intro=document.createElement("section");intro.className="welcome";intro.id="welcome-new";intro.innerHTML='<div class="hero-mark" aria-hidden="true"><span>N</span><i></i><i></i></div><div class="eyebrow">НОВЫЙ ДИАЛОГ</div><h1>О чём поговорим?</h1><p>Задайте вопрос или выберите тему из подсказок ниже.</p>';
+    conversation.append(intro);renderSuggestions("main");closeSidebar();
   }
   const sidebar=$("sidebar"),overlay=$("mobile-overlay");
   function closeSidebar(){sidebar.classList.remove("open");overlay.hidden=true;$("menu-button").setAttribute("aria-expanded","false");}
@@ -155,13 +169,11 @@
     }));
     if(!n){const p=document.createElement("p");p.textContent="Не найдено вопросов.";p.style.padding="14px";list.append(p);}
   }
-  $("chat-form").addEventListener("submit",e=>{e.preventDefault();ask(prompt.value);});
-  prompt.addEventListener("input",resizeInput);
-  prompt.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();if(prompt.value.trim())ask(prompt.value);}});
   $("new-chat").addEventListener("click",resetChat);
   $("clear-button").addEventListener("click",resetChat);
   $("topics-button").addEventListener("click",showTopics);
   $("help-button").addEventListener("click",showTopics);
+  $("all-questions").addEventListener("click",showTopics);
   $("about-button").addEventListener("click",()=>{closeSidebar();ask("Кто ты?","about");});
   $("close-topics").addEventListener("click",()=>topics.close());
   $("topics-search").addEventListener("input",e=>renderTopics(e.target.value));
@@ -210,5 +222,5 @@
   load();
   if(history.length){for(const msg of history)addMessage(msg.role,msg.text,msg.key,false);}
   renderSuggestions(currentKey);
-  resizeInput();
+
 })();
