@@ -88,7 +88,7 @@
   }
   function save(){try{localStorage.setItem(storageKey,JSON.stringify(history.slice(-70)));}catch{}}
   function scrollBottom(){requestAnimationFrame(()=>{scroll.scrollTop=scroll.scrollHeight;});}
-  function hideWelcome(){if(welcome) welcome.hidden=true;}
+  function hideWelcome(){if(welcome) welcome.hidden=true;const fresh=$("welcome-new");if(fresh)fresh.remove();}
   function addMessage(role,text,key="",persist=true){
     hideWelcome();
     const outer=document.createElement("article");outer.className="message "+(role==="user"?"user":"ai");
