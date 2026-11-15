@@ -4,6 +4,7 @@
   const dict = typeof DIALOGS !== "undefined" ? DIALOGS : {};
   const storageKey = "nexora-ai-chat-v2";
   const aliases = {
+    copyright:["авторское право","правообладатель","копирование контента"],stickers:["стикеры","стикерпак","лицензия стикеров"],reporting:["пожаловаться на публикацию","жалоба на пост","как пожаловаться"],account_policy:["правила аккаунта","учетная запись","регистрация"],email_verify:["подтверждение почты","верификация почты","письмо не приходит"],recovery:["восстановить аккаунт","забыл пароль","сброс пароля"],deletion:["удалить аккаунт","удаление профиля"],content_policy:["политика публикаций","правила публикаций","публиковать контент"],verification_policy:["правила верификации","как получить галочку","критерии верификации"],creator_badge:["значок автора","верификация автора"],staff_badge:["значок поддержки","support верификация","модератор значок"],profile_policy:["правила профиля","аватар и обложка"],spam:["спам","накрутка подписчиков"],impersonation:["фейковый аккаунт","выдача себя за другого"],privacy_settings:["настройки приватности","скрыть профиль"],messages:["личные сообщения","переписка"],data_request:["запросить мои данные","копия данных"],transparency:["прозрачность модерации"],accessibility:["доступность интерфейса","отключить анимации"],
     about:["кто ты","что ты такое","как тебя зовут","о тебе","who are you","нексора аи","нексора ии"],
     creator:["кто создал","кто разработал","твой автор","разработчик","кто твой создатель","кто тебя сделал","toolgool","тулгул"],
     skills:["что умеешь","твои возможности","чем можешь помочь","функции","что можешь","способности"],
@@ -110,6 +111,8 @@
     node.append(document.createTextNode(text.slice(last)));
   }
   let answerTimer=null, typeTimer=null, activeTyping=null;
+  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)');
+  function spark(node){if(document.body.classList.contains('motion-off')||reduce.matches)return;const el=document.createElement('i');el.className='reply-flash';node.append(el);setTimeout(()=>el.remove(),850);}
   function cancelTyping(){
     if(answerTimer!==null)clearTimeout(answerTimer);
     if(typeTimer!==null)clearTimeout(typeTimer);
@@ -137,7 +140,7 @@
         if(finished)return;finished=true;
         if(typeTimer!==null){clearTimeout(typeTimer);typeTimer=null;}
         skip.remove();caret.remove();output.remove();setContent(bubble,answer);
-        typing.classList.remove("writing-message");activeTyping=null;
+        typing.classList.remove("writing-message");spark(bubble);activeTyping=null;
         history.push({role:"ai",text:answer,key});save();renderSuggestions(key);scrollBottom();
       }
       skip.addEventListener("click",finish,{once:true});
@@ -164,7 +167,7 @@
     const text=String(question||"").trim().slice(0,2000);if(!text)return;
     cancelTyping();addMessage("user",text);
     const key=forceKey&&dict[forceKey]?forceKey:identify(text,currentKey);
-    const answer=key&&dict[key]?dict[key].text:"Выберите вопрос из доступных вариантов.";
+    const answer=key&&dict[key]?dict[key].text:"Я могу ответить на вопросы о NEXORA, её функциях, документах и правилах. Откройте каталог вопросов и выберите подходящую тему.";
     currentKey=key||"unknown";
     suggestions.replaceChildren();
     animateAnswer(answer,currentKey);
@@ -190,7 +193,7 @@
     Object.values(dict).forEach(data=>(data?.options||[]).forEach(line=>{
       const [label,target]=line.split(" | ");
       if(!dict[target]||target==="main"||/^(назад|на главную)/i.test(label)||existing.has(label))return;
-      if(q&&!normalize(label).includes(q))return;
+      if(q&&!normalize(label+' '+(dict[target]?.text||'').slice(0,250)).includes(q))return;
       existing.add(label);
       const b=document.createElement("button");b.type="button";b.textContent=label;b.addEventListener("click",()=>{topics.close();ask(label,target);});list.append(b);n++;
     }));
@@ -201,7 +204,8 @@
   $("topics-button").addEventListener("click",showTopics);
   $("help-button").addEventListener("click",showTopics);
   $("all-questions").addEventListener("click",showTopics);
-  $("about-button").addEventListener("click",()=>{closeSidebar();ask("Кто ты?","about");});
+  $("about-button").addEventListener("click",()=>{closeSidebar();ask("О NEXORA","nexora");});
+  $("docs-button").addEventListener("click",()=>{closeSidebar();ask("Важные документы","documents");});
   $("close-topics").addEventListener("click",()=>topics.close());
   $("topics-search").addEventListener("input",e=>renderTopics(e.target.value));
   $("menu-button").addEventListener("click",toggleSidebar);
@@ -252,6 +256,8 @@
     const button=e.target.closest("[data-question]");
     if(button&&sections[button.dataset.question]){e.stopPropagation();ask(button.dataset.question,sections[button.dataset.question]);}
   },true);
+  const light=document.querySelector(".cursor-glow");let hoverFrame=0;
+  if(light){document.querySelector(".chat-scroll").addEventListener("pointermove",e=>{if(!motionEnabled||e.pointerType==="touch")return;cancelAnimationFrame(hoverFrame);const rect=scroll.getBoundingClientRect();hoverFrame=requestAnimationFrame(()=>{light.style.setProperty("--pointer-x",(e.clientX-rect.left)+"px");light.style.setProperty("--pointer-y",(e.clientY-rect.top)+"px");});});}
   load();
   if(history.length){for(const msg of history)addMessage(msg.role,msg.text,msg.key,false);}
   renderSuggestions(currentKey);
