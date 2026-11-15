@@ -57,6 +57,7 @@
       if(score) matches.push({key,score:score+(priority.includes(key)?1:0)});
     }
     if(matches.length) return matches.sort((a,b)=>b.score-a.score)[0].key;
+    for(const [key,phrases] of Object.entries(aliases)){if(!dict[key])continue;const overlap=phrases.some(p=>{const words=tokenize(p);return words.length>=2&&words.every(w=>tokenize(text).includes(w));});if(overlap)return key;}
     const words=tokenize(text);
     if(!words.length) return null;
     let ranked=[];
