@@ -135,7 +135,7 @@
       const caret=document.createElement("span");caret.className="typing-caret";caret.setAttribute("aria-hidden","true");bubble.append(caret);
       const skip=document.createElement("button");skip.type="button";skip.className="skip-typing";skip.textContent="Показать полностью ↗";body.append(skip);
       const chars=Array.from(answer.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,"$1"));let pos=0;
-      const step=Math.max(6,Math.min(22,Math.round(1600/Math.max(1,chars.length))));
+      const step=Math.max(10,Math.min(28,Math.round(2400/Math.max(1,chars.length))));
       let finished=false;
       function finish(){
         if(finished)return;finished=true;
@@ -149,11 +149,11 @@
         if(pos>=chars.length){finish();return;}
         const count=Math.min(chars.length-pos,Math.max(1,Math.ceil(chars.length/190)));
         output.textContent+=chars.slice(pos,pos+count).join("");pos+=count;
-        if(pos%12===0)scrollBottom();
+        scrollBottom();
         typeTimer=setTimeout(tick,step);
       }
-      tick();
-    },420);
+      if(reduce.matches || document.body.classList.contains('motion-off')) finish(); else tick();
+    },560);
   }
   function renderSuggestions(key){
     suggestions.replaceChildren();
