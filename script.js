@@ -75,6 +75,12 @@
     }
     ranked.sort((a,b)=>b.score-a.score);
     if(ranked.length) return ranked[0].key;
+    const labels=Object.entries(dict).flatMap(([k,d])=>(d.options||[]).map(o=>o.split(" | "))).filter(([l,k])=>dict[k]&&k!=="main");
+    const distance=(a,b)=>{let row=Array.from({length:b.length+1},(_,i)=>i);for(let i=1;i<=a.length;i++){let next=[i];for(let z=1;z<=b.length;z++)next[z]=Math.min(next[z-1]+1,row[z]+1,row[z-1]+(a[i-1]!==b[z-1]));row=next;}return row[b.length];};
+    const match=(a,b)=>a===b||(a.length>=5&&b.length>=5&&(a.slice(0,4)===b.slice(0,4)||distance(a,b)<=1));
+    const candidates=labels.map(([l,k])=>{const v=tokenize(l);return {k,s:v.filter(b=>words.some(a=>match(a,b))).length/Math.max(v.length,1)};}).filter(x=>x.s>=.65).sort((a,b)=>b.s-a.s);
+    if(candidates.length&&(!candidates[1]||candidates[0].s>candidates[1].s||candidates.every(x=>x.k===candidates[0].k)))return candidates[0].k;
+    if(/^(подробнее|расскажи подробнее|а подробнее)$/.test(text)&&dict[recentKey])return recentKey;
     return null;
   }
   let history=[];
@@ -168,7 +174,7 @@
     const text=String(question||"").trim().slice(0,2000);if(!text)return;
     cancelTyping();addMessage("user",text);
     const key=forceKey&&dict[forceKey]?forceKey:identify(text,currentKey);
-    const answer=key&&dict[key]?dict[key].text:"Я могу ответить на вопросы о NEXORA, её функциях, документах и правилах. Откройте каталог вопросов и выберите подходящую тему.";
+    const answer=key&&dict[key]?dict[key].text:"Не удалось однозначно определить тему. Уточните вопрос: например, вход, блокировка, верификация, конфиденциальность или сообщества. Можно также открыть каталог документов.";
     currentKey=key||"unknown";
     suggestions.replaceChildren();
     animateAnswer(answer,currentKey);
@@ -259,6 +265,7 @@
   },true);
   const light=document.querySelector(".cursor-glow");let hoverFrame=0;
   if(light){document.querySelector(".chat-scroll").addEventListener("pointermove",e=>{if(!motionEnabled||e.pointerType==="touch")return;cancelAnimationFrame(hoverFrame);const rect=scroll.getBoundingClientRect();hoverFrame=requestAnimationFrame(()=>{light.style.setProperty("--pointer-x",(e.clientX-rect.left)+"px");light.style.setProperty("--pointer-y",(e.clientY-rect.top)+"px");});});}
+  $("question-form").addEventListener("submit",e=>{e.preventDefault();const input=$("question-input");if(!input.value.trim())return;ask(input.value);input.value="";});
   load();
   if(history.length){for(const msg of history)addMessage(msg.role,msg.text,msg.key,false);}
   renderSuggestions(currentKey);
